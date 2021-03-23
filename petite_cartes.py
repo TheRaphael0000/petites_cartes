@@ -8,6 +8,7 @@ import argparse
 import itertools
 import time
 import math
+import statistics
 
 
 def quiz(w, cards):
@@ -15,6 +16,9 @@ def quiz(w, cards):
     l = L // 2
     C = curses.COLS
     c = C // 2
+
+    words_lens = [len(word) for word in itertools.chain(*cards)]
+    x_pos = c - int(statistics.mean(words_lens)) // 2
 
     card_no = 0
     while True:
@@ -27,7 +31,7 @@ def quiz(w, cards):
             w.addstr(L - 2, C - 2 - len(str(count)), count, curses.A_DIM)
             lines = [i - math.floor(len(card) / 2) for i in range(len(card))]
             for i, word in enumerate(card):
-                w.addstr(l + lines[i], c - len(word) // 2, word)
+                w.addstr(l + lines[i], x_pos, word)
                 w.getkey()
             w.clear()
 
