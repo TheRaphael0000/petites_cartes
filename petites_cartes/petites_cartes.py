@@ -3,12 +3,19 @@ import glob
 import os
 import sys
 import random
-import curses
 import argparse
 import itertools
 import time
 import math
 import statistics
+
+try:
+    import curses
+except ModuleNotFoundError:
+    print("""
+    Couldn't import curses module,
+    Please install another terminal .-.""")
+    exit()
 
 
 def quiz(w, cards):
@@ -46,7 +53,7 @@ def posivite_int(t):
     return t
 
 
-if __name__ == '__main__':
+def petites_cartes():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file", type=str)
     parser.add_argument("-o", "--offset", default=0, type=posivite_int)
@@ -66,7 +73,10 @@ if __name__ == '__main__':
         file = args.file
 
     cards = json.load(open(file))
-    cards = cards[args.offset:args.offset + args.size]
+    if args.random:
+        cards = random.sample(cards, args.size)
+    else:
+        cards = cards[args.offset:args.offset + args.size]
 
     try:
         w = curses.initscr()
