@@ -18,7 +18,7 @@ except ModuleNotFoundError:
     exit()
 
 
-def quiz(w, cards):
+def quiz(w, cards, reverse):
     L = curses.LINES
     l = L // 2
     C = curses.COLS
@@ -31,6 +31,9 @@ def quiz(w, cards):
     while True:
         random.shuffle(cards)
         for card in cards:
+            if reverse:
+                card = card[::-1]
+
             card_no += 1
             count = f"{str(card_no)}/{str(len(cards))}"
 
@@ -41,6 +44,27 @@ def quiz(w, cards):
                 w.addstr(l + lines[i], x_pos, word)
                 w.getkey()
             w.clear()
+
+def view(w, cards):
+    cols = len(cards[0])
+    L = curses.LINES
+    l = L // 2
+    C = curses.COLS
+    c = C // 2
+
+    la = L - 2
+    ca = C - 2
+
+    col_width = ca//cols
+    len_cols = [max([len(card[i]) for card in cards]) for i in range(cols)]
+
+    w.box()
+    for i, card in enumerate(cards):
+        for j, word in enumerate(card):
+            w.addstr(i + 1, len_cols[j] + 2*j, word)
+    key = w.getkey()
+
+
 
 
 def posivite_int(t):
@@ -58,7 +82,8 @@ def petites_cartes():
     parser.add_argument("-f", "--file", type=str)
     parser.add_argument("-o", "--offset", default=0, type=posivite_int)
     parser.add_argument("-s", "--size", default=10, type=posivite_int)
-    parser.add_argument("-r", "--random", action="store_true")
+    parser.add_argument("-r", "--reverse", action="store_true")
+    parser.add_argument("-v", "--view", action="store_true")
 
     args = parser.parse_args()
 
@@ -73,16 +98,18 @@ def petites_cartes():
         file = args.file
 
     cards = json.load(open(file))
-    if args.random:
-        cards = random.sample(cards, args.size)
-    else:
-        cards = cards[args.offset:args.offset + args.size]
+    cards = cards[args.offset:args.offset + args.size]
 
     try:
         w = curses.initscr()
         curses.noecho()
         curses.curs_set(False)
-        quiz(w, cards)
+        if args.view:
+            view(w, cards)
+        else:
+            quiz(w, cards, args.reverse)
     except KeyboardInterrupt:
+        pass
+    finally:
         curses.curs_set(True)
         curses.endwin()
